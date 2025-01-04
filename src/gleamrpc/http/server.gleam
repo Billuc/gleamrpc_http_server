@@ -239,7 +239,7 @@ fn encode_result(
   |> response.set_body(body)
 }
 
-pub fn start_server(
+pub fn init_mist(
   server: gleamrpc.ProcedureServerInstance(
     request.Request(mist.Connection),
     response.Response(mist.ResponseData),
@@ -247,10 +247,9 @@ pub fn start_server(
     HttpServerError,
   ),
   port: Int,
-) {
+) -> mist.Builder(mist.Connection, mist.ResponseData) {
   server
   |> gleamrpc.serve()
   |> mist.new()
   |> mist.port(port)
-  |> mist.start_http()
 }
