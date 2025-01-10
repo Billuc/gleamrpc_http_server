@@ -267,3 +267,43 @@ pub fn init_mist(
   |> mist.new()
   |> mist.port(port)
 }
+
+pub type CorsOrigins {
+  AllOrigins
+  CorsOrigins(origins: List(String))
+}
+
+/// A middleware that can be registered on a GleamRPC HTTP server to allow cross origin requests.  
+/// You can allow requests from all origins using the `AllOrigins` option.  
+/// Otherwise, use `CorsOrigins([...])` to allow a list of allowed origins.  
+pub fn cors_middleware(
+  origins: CorsOrigins,
+) -> gleamrpc.ProcedureServerMiddleware(
+  request.Request(mist.Connection),
+  response.Response(mist.ResponseData),
+) {
+  fn(
+    in: request.Request(mist.Connection),
+    next: fn(request.Request(mist.Connection)) ->
+      response.Response(mist.ResponseData),
+  ) -> response.Response(mist.ResponseData) {
+    let response = next(in)
+
+    case origins {
+      AllOrigins ->
+        response |> response.set_header("Access-Control-Allow-Origin", "*")
+      CorsOrigins(origins) -> {
+        case list.key_find(in.headers, "Origin") {
+          Error(_) -> response
+          Ok(origin) ->
+            case list.contains(origins, origin) {
+              False -> response
+              True ->
+                response
+                |> response.set_header("Access-Control-Allow-Origin", origin)
+            }
+        }
+      }
+    }
+  }
+}
