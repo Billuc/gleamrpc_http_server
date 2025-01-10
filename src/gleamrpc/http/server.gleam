@@ -240,6 +240,7 @@ fn encode_result(
 
   response.new(200)
   |> response.set_body(body)
+  |> response.set_header("Content-Type", "application/json")
 }
 
 /// Using a ProcedureServerInstance, serve GleamRPC requests over HTTP with Mist  
