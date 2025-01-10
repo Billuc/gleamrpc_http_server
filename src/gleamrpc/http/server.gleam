@@ -293,9 +293,12 @@ pub fn cors_middleware(
       AllOrigins ->
         response |> response.set_header("Access-Control-Allow-Origin", "*")
       CorsOrigins(origins) -> {
-        case list.key_find(in.headers, "Origin") {
-          Error(_) -> response
-          Ok(origin) ->
+        case
+          list.key_find(in.headers, "origin"),
+          list.key_find(in.headers, "Origin")
+        {
+          Error(_), Error(_) -> response
+          Ok(origin), _ | _, Ok(origin) ->
             case list.contains(origins, origin) {
               False -> response
               True ->
